@@ -1,4 +1,4 @@
-#define VIDEO	( (volatile char *) 0x000B8000 ) /* video memory address */
+#define VIDEO	( (volatile char *) 0x000B8000 ) // video memory address 
 #define COLS	80 // width
 #define ROWS	24 // height
 #define COLR	0x0A  // color, 7=green char on black 
@@ -24,7 +24,7 @@ void present();
 
 volatile char * CURS = VIDEO; //+ ROWS*COLS*2;
 
-int rand_seed=0; //semi-random number generated based on 
+int rand_seed=(int)6514306508909781; //semi-random number generated based on 
                  //gethjkl() waiting time
 
 void kmain (){ 
@@ -33,7 +33,7 @@ void kmain (){
 
     kclear_screen();
     kclear_screen();
-    present();
+    //present();
     kclear_screen();
     kprint(hello);
     kprint(l2);
@@ -195,8 +195,13 @@ char gethjkl(){
 
 void wumpus(){
     //plays a game of hunt the wumpus on a char sized grid
+    //6 pits, a wumpus, and the player get a random char location
+    //start w/ 5 arrows
+    //player & wumpus can move forward 1, backward 1, forward 32, backward 32,
+    //wump moves randomly
     char player = rand_seed & 0x0F;
     char wump = (rand_seed & 0xF0)>> 4;
+    char wumpmoves[5]={0,1,-1,32,-32};
     char pit[6];
     int i;
     for (i=0;i<6;i++) pit[i] = (rand_seed & (0xF << (8+4*i))) >> (8+4*i);
@@ -237,6 +242,8 @@ void wumpus(){
             else if (i==2) wump+=32;
             else if (i==3) wump++;
         }
+        i=rand_seed %5;
+        wump += wumpmoves[i];
         if (wump==player){
             kprint("You are eaten by the wumpus... harsh...");
             return;
@@ -253,14 +260,15 @@ void wumpus(){
         }
     }
 }
-
+/*
 void trans(){
+    //wait for input than clear the screen
     gethjkl();
     kclear_screen();
 }
 
 void present(){
-
+    // display a little presentation about wumpOS
     int i;
     //slide 1
     kprint("         wumpOS         ");
@@ -297,3 +305,4 @@ void present(){
     trans();
 
 }
+//*/
