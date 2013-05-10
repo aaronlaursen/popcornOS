@@ -20,15 +20,20 @@ unsigned char *memset(unsigned char *dest, unsigned char val, int count);
 unsigned short *memsetw(unsigned short *dest, unsigned short val, int count);
 unsigned char inportb (unsigned short _port);
 void outportb (unsigned short _port, unsigned char _data);
+void present();
 
 volatile char * CURS = VIDEO; //+ ROWS*COLS*2;
 
-int rand_seed=0;
+int rand_seed=0; //semi-random number generated based on 
+                 //gethjkl() waiting time
 
 void kmain (){ 
 	char hello[] = "Hello World!";
     char l2[]="Look at me!\nI can scroll!";
 
+    kclear_screen();
+    kclear_screen();
+    present();
     kclear_screen();
     kprint(hello);
     kprint(l2);
@@ -47,6 +52,7 @@ void kmain (){
     kputchar(a);
     a++;
     kputchar(a);
+    kputchar('\n');
     kprint("press h");
     gethjkl();
     kprint("wumpus time...");
@@ -55,42 +61,50 @@ void kmain (){
  }   
 
 int strlen(char * s){
+    //counts the elems of a string
     int i;
     for (i=0;*s!=0;s++) i++;
     return i;
 }
 
 unsigned char * memcpy(unsigned char *dest, const unsigned char *src, int count){
+    //simple memcpy implementation
     for (;count>0;count--) *(dest+count-1)=*(src+count-1);
     return dest;
 }
 
 unsigned char *memset(unsigned char *dest, unsigned char val, int count){
+    //simple memset implementation
     for (;count>0;count--) *(dest+count-1)=val;
     return dest;
 }
 
 unsigned short *memsetw(unsigned short *dest, unsigned short val, int count){
+    //memset using short vals
     for (;count>0;count--) *(dest+count-1)=val;
     return dest;
 }
 
 unsigned char inportb (unsigned short _port){
+    //reads from a given port
     unsigned char rv;
     __asm__ __volatile__ ("inb %1, %0" : "=a" (rv) : "dN" (_port));
     return rv;
 }
 
 void outportb (unsigned short _port, unsigned char _data){
+    //writes to a given port
     __asm__ __volatile__ ("outb %1, %0" : : "dN" (_port), "a" (_data));
 }
 
 void kclear_screen(){
+    //clears the screen
     char * p;
     for(p=(char *)VIDEO;p<VIDEO+(COLS*ROWS*2);p+=2) *p=*(p+1)=0;
 }
 
 void kprint(char *s){ 
+    //prints a line to the screen
 
     int i;
     
@@ -105,7 +119,7 @@ void kprint(char *s){
     
         } 
          
-        if(i >= ROWS){
+        if(i >= COLS){
             scrollLine();
             i=0;
         }
@@ -117,6 +131,7 @@ void kprint(char *s){
 }  
 
 void kputchar(char s){
+    //puts a char to the screen at CURR_LOC
        if (s =='\n'){
             scrollLine();
             CURR_LOC=0;
@@ -132,6 +147,7 @@ void kputchar(char s){
 }
 
 void kprintint(int i){
+    //converts an int to a string and prints it
     int p=1;
     char e= (i%10) ? 0: 1;
     for (p=1;i/p>10;p*=10);
@@ -144,8 +160,9 @@ void kprintint(int i){
 } 
 
 void scrollLine(){
+    //moves everything on screen up one row
     int i,j;
-    for(i=0;i<=ROWS-1;i++){
+    for(i=0;i<=ROWS;i++){
         for(j=0;j<=COLS;j++){
             *(VIDEO+((i*COLS+j)*2)) = *(VIDEO+(((i+1)*COLS+j)*2));
             *(VIDEO+((i*COLS+j)*2)+1) = *(VIDEO+(((i+1)*COLS+j)*2)+1);
@@ -158,23 +175,26 @@ void scrollLine(){
 }
 
 int pow(int i, int p){
-    for(;p>0;p--) i*=p;
+    // returns i to the power of p
+    for(;p>0;p--) i*=i;
     return i;
 }
 
 char gethjkl(){
+    //blocks and waits for h,j,k, or l to be pressed then released
     char k=0;
     while (k<0x23 || k>0x26){
         k=inportb(0x60);
-        rand_seed+=274876858367;
+        rand_seed*=274876858367;
     }
-    while (inportb(0x60) != (0xA3-0x23)+k );
+    while (inportb(0x60) != (0xA3-0x23)+k ) rand_seed+=274876858367;
     k-=0x23;
     k="hjkl"[(int)k];
     return k;
 }
 
 void wumpus(){
+    //plays a game of hunt the wumpus on a char sized grid
     char player = rand_seed & 0x0F;
     char wump = (rand_seed & 0xF0)>> 4;
     char pit[6];
@@ -232,4 +252,48 @@ void wumpus(){
             return;
         }
     }
+}
+
+void trans(){
+    gethjkl();
+    kclear_screen();
+}
+
+void present(){
+
+    int i;
+    //slide 1
+    kprint("         wumpOS         ");
+    kprint("      Aaron Laursen     ");
+    for(i=0;i<10;i++) scrollLine();
+
+    trans();
+
+    //slide 2
+    kprint("What is it?");
+    kprint("===========");
+    kprint("");
+    kprint("- Very Basic Operating System");
+    kprint("  - prints to screen");
+    kprint("  - claculates Fibinacci numbers");
+    kprint("  - reads keyboard input (only 4 letters)");
+    for(i=0;i<10;i++) scrollLine();
+    trans();
+
+    //slide 3
+    kprint("Why is it?");
+    kprint("==========");
+    kprint("- Operating systems are cool");
+    kprint("- Learn about low-level OS");
+    kprint("- Thematic appropriateness");
+    for(i=0;i<10;i++) scrollLine();
+    trans();
+
+    //slide 4
+    kprint("=========");
+    kprint("= DEMO! =");
+    kprint("=========");
+    for(i=0;i<10;i++) scrollLine();
+    trans();
+
 }
