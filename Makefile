@@ -1,6 +1,6 @@
 CC = clang
-CFLAGS = -c -Os -m32 -Wall -ffreestanding -nostdlib -fno-stack-protector
-LDFLAGS = -Os -melf_i386 -e arch_start -Ttext=0x100000
+CFLAGS = -c -Os -m32 -Wall -ffreestanding -nostdlib -fno-stack-protector -s 
+LDFLAGS = -Os -melf_i386 -e arch_start -Ttext=0x100000 -s --gc-sections
 QEMU_CMD = qemu-system-i386 -kernel
 KERNEL = kernel.elf
 

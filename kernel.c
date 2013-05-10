@@ -85,6 +85,7 @@ unsigned short *memsetw(unsigned short *dest, unsigned short val, int count){
     return dest;
 }
 
+
 unsigned char inportb (unsigned short _port){
     //reads from a given port
     unsigned char rv;
