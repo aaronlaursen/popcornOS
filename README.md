@@ -4,8 +4,6 @@ wumpOS
 tiny, hand-rolled operating system
 
 by Aaron Laursen 
--- aaronlaursen (at) gmail (dot) com
--- alaursen (at) macalester (dot) edu
 
 requirements:
 * QEMU
